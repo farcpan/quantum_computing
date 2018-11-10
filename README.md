@@ -1,2 +1,2 @@
-# quantum_computing
-For quantum computing
+# Qunaum Computing
+This repositry is for `quantum computing`. 
