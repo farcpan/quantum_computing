@@ -9,6 +9,8 @@ numberplace.py
 import sys
 import csv
 import time
+import dimod
+import neal
 import argparse
 from dwave_qbsolv import QBSolv
 from dwave.system.samplers import DWaveSampler
@@ -75,10 +77,16 @@ def convert_area_to_index(area, index, num):
 #
 # calculation (tabu search or dwave)
 #
-def do_calculation(use_dwave):
-    if use_dwave == True:
+def do_calculation(simul):
+    if simul == "dwave":
         _sampler = EmbeddingComposite(DWaveSampler())
-        _response = QBSolv().sample_qubo(qubo, num_repeats=NUM_REPEATS, verbosity=VERBOSITY_LEVEL, solver=sampler)
+        _response = QBSolv().sample_qubo(qubo, num_repeats=NUM_REPEATS, verbosity=VERBOSITY_LEVEL, solver=_sampler)
+    elif simul == "dimod":
+        _sampler = dimod.ExactSolver()
+        _response = QBSolv().sample_qubo(qubo, num_repeats=NUM_REPEATS, verbosity=VERBOSITY_LEVEL, solver=_sampler)
+    elif simul == "neal":
+        _sampler = neal.SimulatedAnnealingSampler()
+        _response = QBSolv().sample_qubo(qubo, num_repeats=NUM_REPEATS, verbosity=VERBOSITY_LEVEL, solver=_sampler)
     else:
         _response = QBSolv().sample_qubo(qubo, num_repeats=NUM_REPEATS, verbosity=VERBOSITY_LEVEL);
     return _response
@@ -173,7 +181,7 @@ def dump_output():
 # main function
 #
 def main():
-    _use_dwave = False
+    _simul = "qbsolv"
     _input_file_name = './input/input_example.csv'  # default file name
     _args = get_args()  # command line arguments
 
@@ -182,8 +190,8 @@ def main():
             _input_file_name = _args.input
 
     if hasattr(_args, 'sampler'):
-        if _args.sampler == 'dwave':
-            _use_dwave = True
+        if _args.sampler != None:
+            _simul = _args.sampler
 
     #
     # Parameter Definition
@@ -265,7 +273,7 @@ def main():
     # calculation
     for i in range(ITERATION_MAX):
         print("Try: {}".format(i + 1))
-        _response = do_calculation(_use_dwave)
+        _response = do_calculation(_simul)
         _result = list(_response.samples())
 
         # analysis
