@@ -18,10 +18,14 @@ from dwave.system.composites import EmbeddingComposite
 
 '''
 Parameter adjustment (constant)
-    Param = (-1.0 - QUBO_PARAM_DELTA) / QUBO_PARAM_FACTOR
+    param for empty cell : -QUBO_PARAM1 / QUBO_PARAM_FACTOR
+    param for filled cell: -(QUBO_PARAM1 + QUBO_PARAM_DELTA) / QUBO_PARAM_FACTOR
+    param for constraint : QUBO_PARAM2 / QUBO_PARAM_FACTOR 
 '''
-QUBO_PARAM_DELTA = 4.0
-QUBO_PARAM_FACTOR = 10.0
+QUBO_PARAM1 = 1.0
+QUBO_PARAM2 = 1.0
+QUBO_PARAM_DELTA = 5.0
+QUBO_PARAM_FACTOR = 1.0
 
 '''
 Data
@@ -39,7 +43,7 @@ MATRIX_SIZE = SUBMATRIX_SIZE * SUBMATRIX_SIZE
 '''
 Calculation option
 '''
-NUM_REPEATS = 50
+NUM_REPEATS = 80
 VERBOSITY_LEVEL = 0
 ITERATION_MAX = 10
 
@@ -144,7 +148,7 @@ def do_analysis(results):
 
                     # up
                     for f in range(1, MATRIX_SIZE):
-                        _tmp_i = i - f;
+                        _tmp_i = i - f
                         if 0 <= _tmp_i < MATRIX_SIZE:
                             _val2 = get_index(_tmp_i, j, k)
                             _invalid += obj[_val1] * obj[_val2]
@@ -198,7 +202,7 @@ def main():
     #
     # h
     for i in range(MATRIX_SIZE * MATRIX_SIZE * MATRIX_SIZE):
-        qubo[(i, i)] = -1.0 / QUBO_PARAM_FACTOR
+        qubo[(i, i)] = - QUBO_PARAM1 / QUBO_PARAM_FACTOR
 
     # J
     for i in range(MATRIX_SIZE):
@@ -207,10 +211,8 @@ def main():
                 for k2 in range(k1 + 1, MATRIX_SIZE):
                     _val1 = get_index(i, j, k1)
                     _val2 = get_index(i, j, k2)
-                    if (_val1, _val2) in qubo:
-                        qubo[(_val1, _val2)] += 1.0 / QUBO_PARAM_FACTOR
-                    else:
-                        qubo[(_val1, _val2)] = 1.0 / QUBO_PARAM_FACTOR
+                    if (_val1, _val2) not in qubo:
+                        qubo[(_val1, _val2)] = QUBO_PARAM2 / QUBO_PARAM_FACTOR
 
     # row & colomn
     for i in range(MATRIX_SIZE):
@@ -223,20 +225,16 @@ def main():
                     _tmp_j = j - f
                     if 0 <= _tmp_j < MATRIX_SIZE:
                         _val2 = get_index(i, _tmp_j, k)
-                        if (_val1, _val2) in qubo:
-                            qubo[(_val2, _val1)] += 1.0 / QUBO_PARAM_FACTOR
-                        else:
-                            qubo[(_val2, _val1)] = 1.0 / QUBO_PARAM_FACTOR
+                        if (_val1, _val2) not in qubo:
+                            qubo[(_val2, _val1)] = QUBO_PARAM2 / QUBO_PARAM_FACTOR
 
                 # up
                 for f in range(1, MATRIX_SIZE):
                     _tmp_i = i - f
                     if 0 <= _tmp_i < MATRIX_SIZE:
                         _val2 = get_index(_tmp_i, j, k)
-                        if (_val1, _val2) in qubo:
-                            qubo[(_val2, _val1)] += 1.0 / QUBO_PARAM_FACTOR
-                        else:
-                            qubo[(_val2, _val1)] = 1.0 / QUBO_PARAM_FACTOR
+                        if (_val1, _val2) not in qubo:
+                            qubo[(_val2, _val1)] = QUBO_PARAM2 / QUBO_PARAM_FACTOR
 
     # area
     for area in range(MATRIX_SIZE):
@@ -245,10 +243,8 @@ def main():
                 for index2 in range(index + 1, MATRIX_SIZE):
                     _val1 = convert_area_to_index(area, index, num)
                     _val2 = convert_area_to_index(area, index2, num)
-                    if (_val1, _val2) in qubo:
-                        qubo[(_val1, _val2)] += 1.0 / QUBO_PARAM_FACTOR
-                    else:
-                        qubo[(_val1, _val2)] = 1.0 / QUBO_PARAM_FACTOR
+                    if (_val1, _val2) not in qubo:
+                        qubo[(_val1, _val2)] = QUBO_PARAM2 / QUBO_PARAM_FACTOR
 
     #
     # input (CSV format)
