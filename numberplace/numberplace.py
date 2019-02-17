@@ -230,7 +230,7 @@ def main():
 
                 # up
                 for f in range(1, MATRIX_SIZE):
-                    _tmp_i = i - f;
+                    _tmp_i = i - f
                     if 0 <= _tmp_i < MATRIX_SIZE:
                         _val2 = get_index(_tmp_i, j, k)
                         if (_val1, _val2) in qubo:
